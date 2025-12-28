@@ -6,7 +6,6 @@ import dk.mosberg.config.ManaConfig;
 import dk.mosberg.mana.ManaPool;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -22,8 +21,8 @@ public class Mana implements ModInitializer {
 		LOGGER.info("Mana System initialized!");
 	}
 
-	public static ClientPlayerEntity getInstance() {
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+	public static PlayerEntity getInstance() {
+		PlayerEntity player = MinecraftClient.getInstance().player;
 		return player;
 	}
 
