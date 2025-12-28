@@ -1,0 +1,122 @@
+{
+  "mana.mod.name": "Mana System",
+  "mana.mod.description": "A comprehensive mana system with three independent pools, automatic regeneration, and customizable HUD overlay",
+
+  "mana.pool.primary": "Primary Mana",
+  "mana.pool.secondary": "Secondary Mana",
+  "mana.pool.tertiary": "Tertiary Mana",
+  "mana.pool.total": "Total Mana",
+
+  "mana.hud.primary": "Primary: %s / %s",
+  "mana.hud.secondary": "Secondary: %s / %s",
+  "mana.hud.tertiary": "Tertiary: %s / %s",
+  "mana.hud.total": "Total: %s / %s",
+  "mana.hud.percent": "%d%%",
+
+  "mana.message.consumed": "Consumed %s mana",
+  "mana.message.restored": "Restored %s mana",
+  "mana.message.insufficient": "Not enough mana! (Need %s, have %s)",
+  "mana.message.pool_full": "%s pool is already full",
+  "mana.message.pools_full": "All mana pools are full",
+
+  "mana.message.regeneration.enabled": "Mana regeneration enabled",
+  "mana.message.regeneration.disabled": "Mana regeneration disabled",
+  "mana.message.regeneration.paused": "Mana regeneration paused",
+  "mana.message.regeneration.resumed": "Mana regeneration resumed",
+
+  "mana.message.max_increased": "%s maximum mana increased by %s",
+  "mana.message.all_pools_expanded": "All mana pools expanded by %s",
+  "mana.message.pool_restored": "%s pool restored to maximum",
+  "mana.message.all_pools_restored": "All mana pools restored to maximum",
+
+  "mana.message.transfer.success": "Transferred %s mana to %s",
+  "mana.message.transfer.received": "Received %s mana from %s",
+  "mana.message.transfer.failed": "Failed to transfer mana",
+
+  "mana.config.title": "Mana System Configuration",
+  "mana.config.category.overlay": "HUD Overlay",
+  "mana.config.category.gameplay": "Gameplay Balance",
+  "mana.config.category.advanced": "Advanced Settings",
+
+  "mana.config.overlay.enabled": "Enable HUD Overlay",
+  "mana.config.overlay.enabled.tooltip": "Show or hide the mana HUD overlay",
+  "mana.config.overlay.scale": "Overlay Scale",
+  "mana.config.overlay.scale.tooltip": "Visual scale of the overlay (0.5 = 50%, 2.0 = 200%)",
+  "mana.config.overlay.xOffset": "Horizontal Offset",
+  "mana.config.overlay.xOffset.tooltip": "Horizontal position adjustment in pixels (+ = right, - = left)",
+  "mana.config.overlay.yOffset": "Vertical Offset",
+  "mana.config.overlay.yOffset.tooltip": "Vertical position adjustment in pixels (+ = down, - = up)",
+  "mana.config.overlay.transparency": "Transparency",
+  "mana.config.overlay.transparency.tooltip": "Overlay opacity (0.0 = invisible, 1.0 = fully opaque)",
+
+  "mana.config.manaBar.enabled": "Show Mana Bars",
+  "mana.config.manaBar.enabled.tooltip": "Display individual mana pool bars",
+
+  "mana.config.spell.costMultiplier": "Spell Cost Multiplier",
+  "mana.config.spell.costMultiplier.tooltip": "Global multiplier for spell mana costs (2.0 = double cost)",
+  "mana.config.ritual.difficultyMultiplier": "Ritual Difficulty Multiplier",
+  "mana.config.ritual.difficultyMultiplier.tooltip": "Multiplier for ritual difficulty (1.5 = 50% harder)",
+
+  "mana.config.saved": "Configuration saved successfully",
+  "mana.config.loaded": "Configuration loaded successfully",
+  "mana.config.reset": "Configuration reset to defaults",
+  "mana.config.error": "Error loading configuration: %s",
+
+  "mana.command.get": "Your mana: %s / %s",
+  "mana.command.get.other": "%s's mana: %s / %s",
+  "mana.command.set.success": "Set %s's %s mana to %s",
+  "mana.command.add.success": "Added %s mana to %s's %s pool",
+  "mana.command.remove.success": "Removed %s mana from %s's %s pool",
+  "mana.command.restore.success": "Restored %s's %s pool to maximum",
+  "mana.command.restore.all.success": "Restored all of %s's mana pools",
+  "mana.command.setMax.success": "Set %s's %s maximum mana to %s",
+  "mana.command.regen.enable": "Enabled mana regeneration for %s",
+  "mana.command.regen.disable": "Disabled mana regeneration for %s",
+
+  "mana.command.error.player_not_found": "Player '%s' not found",
+  "mana.command.error.invalid_amount": "Invalid amount: %s",
+  "mana.command.error.invalid_pool": "Invalid pool type. Use: primary, secondary, or tertiary",
+  "mana.command.error.no_component": "Player has no mana component",
+
+  "mana.tooltip.mana_cost": "Mana Cost: %s",
+  "mana.tooltip.mana_restore": "Restores %s mana",
+  "mana.tooltip.requires_mana": "Requires %s mana",
+  "mana.tooltip.max_mana_increase": "Permanently increases maximum mana by %s",
+  "mana.tooltip.regen_rate": "Regenerates %s mana per second",
+
+  "mana.status.low_mana": "Low Mana",
+  "mana.status.no_mana": "Out of Mana",
+  "mana.status.regenerating": "Regenerating Mana",
+  "mana.status.regen_disabled": "Regeneration Disabled",
+
+  "mana.keybind.category": "Mana System",
+  "mana.keybind.toggle_overlay": "Toggle Mana Overlay",
+  "mana.keybind.show_details": "Show Mana Details",
+
+  "mana.death.no_mana": "%s died from mana exhaustion",
+  "mana.death.overload": "%s was consumed by raw mana",
+
+  "mana.advancement.root": "Mana System",
+  "mana.advancement.root.description": "Harness the power of mana",
+  "mana.advancement.first_mana": "Magical Awakening",
+  "mana.advancement.first_mana.description": "Use mana for the first time",
+  "mana.advancement.max_primary": "Primary Mastery",
+  "mana.advancement.max_primary.description": "Fill your primary mana pool",
+  "mana.advancement.max_all": "Mana Virtuoso",
+  "mana.advancement.max_all.description": "Fill all three mana pools",
+  "mana.advancement.consume_1000": "Mana Adept",
+  "mana.advancement.consume_1000.description": "Consume 1000 mana",
+  "mana.advancement.consume_10000": "Archmage",
+  "mana.advancement.consume_10000.description": "Consume 10,000 mana",
+
+  "mana.info.pool_capacity": "Pool Capacity: %s / %s",
+  "mana.info.regen_rate": "Regeneration Rate: %s per second",
+  "mana.info.time_to_full": "Time to Full: %s seconds",
+  "mana.info.pools_depleted": "All pools depleted",
+
+  "mana.debug.component_created": "ManaComponent created for player %s",
+  "mana.debug.component_removed": "ManaComponent removed for player %s",
+  "mana.debug.component_count": "Active ManaComponents: %d",
+  "mana.debug.pool_state": "Pool State - Primary: %s/%s, Secondary: %s/%s, Tertiary: %s/%s",
+  "mana.debug.tick": "Mana tick executed for %d players"
+}
