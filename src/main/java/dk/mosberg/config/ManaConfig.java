@@ -267,4 +267,84 @@ public class ManaConfig {
             return comment;
         }
     }
+
+    /**
+     * Sets overlay enabled state.
+     *
+     * @param enabled Whether overlay should be enabled
+     */
+    public static void setOverlayEnabled(boolean enabled) {
+        configData.put("overlay.enabled", enabled);
+    }
+
+    /**
+     * Sets overlay scale.
+     *
+     * @param scale The scale value (0.5-2.0)
+     */
+    public static void setOverlayScale(double scale) {
+        if (scale >= 0.5 && scale <= 2.0) {
+            configData.put("overlay.scale", scale);
+        }
+    }
+
+    /**
+     * Sets overlay horizontal offset.
+     *
+     * @param offset The horizontal offset in pixels
+     */
+    public static void setOverlayXOffset(int offset) {
+        configData.put("overlay.xOffset", offset);
+    }
+
+    /**
+     * Sets overlay vertical offset.
+     *
+     * @param offset The vertical offset in pixels
+     */
+    public static void setOverlayYOffset(int offset) {
+        configData.put("overlay.yOffset", offset);
+    }
+
+    /**
+     * Sets overlay transparency.
+     *
+     * @param transparency The transparency value (0.0-1.0)
+     */
+    public static void setOverlayTransparency(double transparency) {
+        if (transparency >= 0.0 && transparency <= 1.0) {
+            configData.put("overlay.transparency", transparency);
+        }
+    }
+
+    /**
+     * Sets mana bar enabled state.
+     *
+     * @param enabled Whether mana bars should be displayed
+     */
+    public static void setManaBarEnabled(boolean enabled) {
+        configData.put("render.hud.manaBar.enabled", enabled);
+    }
+
+    /**
+     * Sets spell mana cost multiplier.
+     *
+     * @param multiplier The cost multiplier (must be non-negative)
+     */
+    public static void setSpellManaCostMultiplier(double multiplier) {
+        if (multiplier >= 0.0) {
+            configData.put("magic.spell.manaCost.multiplier", multiplier);
+        }
+    }
+
+    /**
+     * Sets ritual difficulty multiplier.
+     *
+     * @param multiplier The difficulty multiplier (must be non-negative)
+     */
+    public static void setRitualDifficultyMultiplier(double multiplier) {
+        if (multiplier >= 0.0) {
+            configData.put("magic.ritual.difficulty.multiplier", multiplier);
+        }
+    }
 }

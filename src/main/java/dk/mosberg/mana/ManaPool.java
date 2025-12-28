@@ -1,54 +1,75 @@
-// ManaPool.java - FULLY FIXED for 1.21+ NBT API
 package dk.mosberg.mana;
 
+import org.jetbrains.annotations.NotNull;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 
 /**
  * Manages a player's three mana pools with automatic regeneration. Uses game ticks for
  * deterministic, multiplayer-safe timing.
+ *
+ * <p>
+ * Pool Value System: Each pool has both current mana and a "pool value" which represents the
+ * base/intrinsic capacity. Pool values can be increased through leveling, items, or other
+ * progression mechanics, allowing for permanent mana pool expansion.
  */
 public class ManaPool {
 
-    // Constants
+    // Default constants
     private static final double REGEN_RATE_PRIMARY = 1.0;
     private static final double REGEN_RATE_SECONDARY = 0.75;
     private static final double REGEN_RATE_TERTIARY = 0.5;
-    private static final double MAX_MANA_PRIMARY_POOL = 250.0;
-    private static final double MAX_MANA_SECONDARY_POOL = 500.0;
-    private static final double MAX_MANA_TERTIARY_POOL = 1000.0;
+    private static final double DEFAULT_PRIMARY_POOL_VALUE = 250.0;
+    private static final double DEFAULT_SECONDARY_POOL_VALUE = 500.0;
+    private static final double DEFAULT_TERTIARY_POOL_VALUE = 1000.0;
     private static final int TICKS_PER_SECOND = 20;
 
-    // Pool state
+    // Current mana in each pool
     private double primaryMana;
     private double secondaryMana;
     private double tertiaryMana;
-    private double primaryMax;
-    private double secondaryMax;
-    private double tertiaryMax;
+
+    // Pool values (base capacity from progression/leveling)
+    private double primaryPoolValue;
+    private double secondaryPoolValue;
+    private double tertiaryPoolValue;
+
+    // Temporary max modifiers (buffs, debuffs, equipment bonuses)
+    private double primaryMaxModifier;
+    private double secondaryMaxModifier;
+    private double tertiaryMaxModifier;
+
+    // Regeneration state
     private boolean regenerating = true;
 
     /**
-     * Creates a new ManaPool with default max values.
+     * Creates a new ManaPool with default pool values.
      */
     public ManaPool() {
-        this(MAX_MANA_PRIMARY_POOL, MAX_MANA_SECONDARY_POOL, MAX_MANA_TERTIARY_POOL);
+        this(DEFAULT_PRIMARY_POOL_VALUE, DEFAULT_SECONDARY_POOL_VALUE, DEFAULT_TERTIARY_POOL_VALUE);
     }
 
     /**
-     * Creates a new ManaPool with custom max values.
+     * Creates a new ManaPool with custom pool values.
      *
-     * @param primaryMax Maximum primary mana
-     * @param secondaryMax Maximum secondary mana
-     * @param tertiaryMax Maximum tertiary mana
+     * @param primaryPoolValue Base primary pool capacity
+     * @param secondaryPoolValue Base secondary pool capacity
+     * @param tertiaryPoolValue Base tertiary pool capacity
      */
-    public ManaPool(double primaryMax, double secondaryMax, double tertiaryMax) {
-        this.primaryMax = Math.max(0, primaryMax);
-        this.secondaryMax = Math.max(0, secondaryMax);
-        this.tertiaryMax = Math.max(0, tertiaryMax);
-        this.primaryMana = this.primaryMax;
-        this.secondaryMana = this.secondaryMax;
-        this.tertiaryMana = this.tertiaryMax;
+    public ManaPool(double primaryPoolValue, double secondaryPoolValue, double tertiaryPoolValue) {
+        this.primaryPoolValue = Math.max(0, primaryPoolValue);
+        this.secondaryPoolValue = Math.max(0, secondaryPoolValue);
+        this.tertiaryPoolValue = Math.max(0, tertiaryPoolValue);
+
+        // Initialize modifiers to zero
+        this.primaryMaxModifier = 0;
+        this.secondaryMaxModifier = 0;
+        this.tertiaryMaxModifier = 0;
+
+        // Start with full mana
+        this.primaryMana = getPrimaryMax();
+        this.secondaryMana = getSecondaryMax();
+        this.tertiaryMana = getTertiaryMax();
     }
 
     /**
@@ -56,7 +77,7 @@ public class ManaPool {
      *
      * @param player The player entity
      */
-    public void tick(PlayerEntity player) {
+    public void tick(@NotNull PlayerEntity player) {
         if (!regenerating) {
             return;
         }
@@ -67,21 +88,21 @@ public class ManaPool {
         double tertiaryRegenPerTick = REGEN_RATE_TERTIARY / TICKS_PER_SECOND;
 
         // Regenerate each pool independently
-        if (primaryMana < primaryMax) {
-            primaryMana = Math.min(primaryMax, primaryMana + primaryRegenPerTick);
+        if (primaryMana < getPrimaryMax()) {
+            primaryMana = Math.min(getPrimaryMax(), primaryMana + primaryRegenPerTick);
         }
 
-        if (secondaryMana < secondaryMax) {
-            secondaryMana = Math.min(secondaryMax, secondaryMana + secondaryRegenPerTick);
+        if (secondaryMana < getSecondaryMax()) {
+            secondaryMana = Math.min(getSecondaryMax(), secondaryMana + secondaryRegenPerTick);
         }
 
-        if (tertiaryMana < tertiaryMax) {
-            tertiaryMana = Math.min(tertiaryMax, tertiaryMana + tertiaryRegenPerTick);
+        if (tertiaryMana < getTertiaryMax()) {
+            tertiaryMana = Math.min(getTertiaryMax(), tertiaryMana + tertiaryRegenPerTick);
         }
     }
 
     /**
-     * Consume mana from pools in priority order (primary -> secondary -> tertiary).
+     * Consume mana from pools in priority order (primary → secondary → tertiary).
      *
      * @param amount Amount of mana to consume
      * @return true if mana was consumed, false if insufficient
@@ -125,7 +146,7 @@ public class ManaPool {
     }
 
     /**
-     * Restore mana to pools in priority order (primary -> secondary -> tertiary).
+     * Restore mana to pools in priority order (primary → secondary → tertiary).
      *
      * @param amount Amount of mana to restore
      */
@@ -137,7 +158,7 @@ public class ManaPool {
         double remaining = amount;
 
         // Fill primary first
-        double primarySpace = primaryMax - primaryMana;
+        double primarySpace = getPrimaryMax() - primaryMana;
         if (primarySpace > 0 && remaining > 0) {
             double toAdd = Math.min(remaining, primarySpace);
             primaryMana += toAdd;
@@ -146,7 +167,7 @@ public class ManaPool {
 
         // Then secondary
         if (remaining > 0) {
-            double secondarySpace = secondaryMax - secondaryMana;
+            double secondarySpace = getSecondaryMax() - secondaryMana;
             if (secondarySpace > 0) {
                 double toAdd = Math.min(remaining, secondarySpace);
                 secondaryMana += toAdd;
@@ -156,7 +177,7 @@ public class ManaPool {
 
         // Finally tertiary
         if (remaining > 0) {
-            double tertiarySpace = tertiaryMax - tertiaryMana;
+            double tertiarySpace = getTertiaryMax() - tertiaryMana;
             if (tertiarySpace > 0) {
                 double toAdd = Math.min(remaining, tertiarySpace);
                 tertiaryMana += toAdd;
@@ -169,11 +190,11 @@ public class ManaPool {
      *
      * @param type The pool type to restore
      */
-    public void restorePool(ManaPoolType type) {
+    public void restorePool(@NotNull ManaPoolType type) {
         switch (type) {
-            case PRIMARY -> primaryMana = primaryMax;
-            case SECONDARY -> secondaryMana = secondaryMax;
-            case TERTIARY -> tertiaryMana = tertiaryMax;
+            case PRIMARY -> primaryMana = getPrimaryMax();
+            case SECONDARY -> secondaryMana = getSecondaryMax();
+            case TERTIARY -> tertiaryMana = getTertiaryMax();
         }
     }
 
@@ -181,58 +202,126 @@ public class ManaPool {
      * Instantly restore all pools to maximum.
      */
     public void restoreAll() {
-        primaryMana = primaryMax;
-        secondaryMana = secondaryMax;
-        tertiaryMana = tertiaryMax;
+        primaryMana = getPrimaryMax();
+        secondaryMana = getSecondaryMax();
+        tertiaryMana = getTertiaryMax();
     }
 
     /**
-     * Increase maximum mana capacity for a specific pool.
+     * Permanently increase a pool's base capacity (pool value). This represents permanent
+     * progression like leveling up.
      *
      * @param type The pool type
-     * @param amount Amount to increase
+     * @param amount Amount to increase the pool value by
      */
-    public void increaseMaxMana(ManaPoolType type, double amount) {
+    public void increasePoolValue(@NotNull ManaPoolType type, double amount) {
         if (amount <= 0) {
             return;
         }
 
         switch (type) {
             case PRIMARY -> {
-                primaryMax += amount;
-                primaryMana = Math.min(primaryMana + amount, primaryMax);
+                primaryPoolValue += amount;
+                // Also increase current mana proportionally
+                primaryMana = Math.min(primaryMana + amount, getPrimaryMax());
             }
             case SECONDARY -> {
-                secondaryMax += amount;
-                secondaryMana = Math.min(secondaryMana + amount, secondaryMax);
+                secondaryPoolValue += amount;
+                secondaryMana = Math.min(secondaryMana + amount, getSecondaryMax());
             }
             case TERTIARY -> {
-                tertiaryMax += amount;
-                tertiaryMana = Math.min(tertiaryMana + amount, tertiaryMax);
+                tertiaryPoolValue += amount;
+                tertiaryMana = Math.min(tertiaryMana + amount, getTertiaryMax());
             }
         }
     }
 
     /**
-     * Expands all mana pools by a given amount.
+     * Set the base pool value directly (for commands/admin tools).
      *
-     * @param amount Amount to expand each pool
+     * @param type The pool type
+     * @param value The new pool value
      */
-    public void expandAllPools(double amount) {
-        increaseMaxMana(ManaPoolType.PRIMARY, amount);
-        increaseMaxMana(ManaPoolType.SECONDARY, amount);
-        increaseMaxMana(ManaPoolType.TERTIARY, amount);
+    public void setPoolValue(@NotNull ManaPoolType type, double value) {
+        if (value < 0) {
+            return;
+        }
+
+        switch (type) {
+            case PRIMARY -> {
+                primaryPoolValue = value;
+                primaryMana = Math.min(primaryMana, getPrimaryMax());
+            }
+            case SECONDARY -> {
+                secondaryPoolValue = value;
+                secondaryMana = Math.min(secondaryMana, getSecondaryMax());
+            }
+            case TERTIARY -> {
+                tertiaryPoolValue = value;
+                tertiaryMana = Math.min(tertiaryMana, getTertiaryMax());
+            }
+        }
     }
 
     /**
-     * Shares mana with another ManaPool.
+     * Apply temporary max modifier (from equipment, buffs, etc.). These don't persist and should be
+     * reapplied on login.
+     *
+     * @param type The pool type
+     * @param modifier The modifier amount (can be positive or negative)
+     */
+    public void applyMaxModifier(@NotNull ManaPoolType type, double modifier) {
+        switch (type) {
+            case PRIMARY -> {
+                primaryMaxModifier += modifier;
+                // Clamp current mana if max decreased
+                primaryMana = Math.min(primaryMana, getPrimaryMax());
+            }
+            case SECONDARY -> {
+                secondaryMaxModifier += modifier;
+                secondaryMana = Math.min(secondaryMana, getSecondaryMax());
+            }
+            case TERTIARY -> {
+                tertiaryMaxModifier += modifier;
+                tertiaryMana = Math.min(tertiaryMana, getTertiaryMax());
+            }
+        }
+    }
+
+    /**
+     * Clear all temporary max modifiers.
+     */
+    public void clearMaxModifiers() {
+        primaryMaxModifier = 0;
+        secondaryMaxModifier = 0;
+        tertiaryMaxModifier = 0;
+
+        // Clamp current mana values
+        primaryMana = Math.min(primaryMana, getPrimaryMax());
+        secondaryMana = Math.min(secondaryMana, getSecondaryMax());
+        tertiaryMana = Math.min(tertiaryMana, getTertiaryMax());
+    }
+
+    /**
+     * Expand all pool values by a given amount.
+     *
+     * @param amount Amount to expand each pool value
+     */
+    public void expandAllPools(double amount) {
+        increasePoolValue(ManaPoolType.PRIMARY, amount);
+        increasePoolValue(ManaPoolType.SECONDARY, amount);
+        increasePoolValue(ManaPoolType.TERTIARY, amount);
+    }
+
+    /**
+     * Share mana with another ManaPool.
      *
      * @param other The other ManaPool to share with
      * @param amount Amount to share
      * @return true if mana was shared, false otherwise
      */
-    public boolean shareMana(ManaPool other, double amount) {
-        if (other == null || amount <= 0 || getTotalMana() < amount) {
+    public boolean shareMana(@NotNull ManaPool other, double amount) {
+        if (amount <= 0 || getTotalMana() < amount) {
             return false;
         }
 
@@ -253,7 +342,8 @@ public class ManaPool {
         this.regenerating = regenerating;
     }
 
-    // Getters
+    // ==================== GETTERS: Current Mana ====================
+
     public double getPrimaryMana() {
         return primaryMana;
     }
@@ -266,74 +356,186 @@ public class ManaPool {
         return tertiaryMana;
     }
 
-    public double getPrimaryMax() {
-        return primaryMax;
-    }
-
-    public double getSecondaryMax() {
-        return secondaryMax;
-    }
-
-    public double getTertiaryMax() {
-        return tertiaryMax;
-    }
-
     public double getTotalMana() {
         return primaryMana + secondaryMana + tertiaryMana;
     }
 
-    public double getTotalMaxMana() {
-        return primaryMax + secondaryMax + tertiaryMax;
+    // ==================== GETTERS: Pool Values ====================
+
+    public double getPrimaryPoolValue() {
+        return primaryPoolValue;
     }
 
+    public double getSecondaryPoolValue() {
+        return secondaryPoolValue;
+    }
+
+    public double getTertiaryPoolValue() {
+        return tertiaryPoolValue;
+    }
+
+    // ==================== GETTERS: Effective Max (Pool Value + Modifiers)
+    // ====================
+
+    public double getPrimaryMax() {
+        return Math.max(0, primaryPoolValue + primaryMaxModifier);
+    }
+
+    public double getSecondaryMax() {
+        return Math.max(0, secondaryPoolValue + secondaryMaxModifier);
+    }
+
+    public double getTertiaryMax() {
+        return Math.max(0, tertiaryPoolValue + tertiaryMaxModifier);
+    }
+
+    public double getTotalMaxMana() {
+        return getPrimaryMax() + getSecondaryMax() + getTertiaryMax();
+    }
+
+    // ==================== GETTERS: Percentages ====================
+
     public double getPrimaryPercent() {
-        return primaryMax > 0 ? primaryMana / primaryMax : 0.0;
+        double max = getPrimaryMax();
+        return max > 0 ? primaryMana / max : 0.0;
     }
 
     public double getSecondaryPercent() {
-        return secondaryMax > 0 ? secondaryMana / secondaryMax : 0.0;
+        double max = getSecondaryMax();
+        return max > 0 ? secondaryMana / max : 0.0;
     }
 
     public double getTertiaryPercent() {
-        return tertiaryMax > 0 ? tertiaryMana / tertiaryMax : 0.0;
+        double max = getTertiaryMax();
+        return max > 0 ? tertiaryMana / max : 0.0;
     }
+
+    public double getTotalPercent() {
+        double totalMax = getTotalMaxMana();
+        return totalMax > 0 ? getTotalMana() / totalMax : 0.0;
+    }
+
+    // ==================== GETTERS: Modifiers ====================
+
+    public double getPrimaryMaxModifier() {
+        return primaryMaxModifier;
+    }
+
+    public double getSecondaryMaxModifier() {
+        return secondaryMaxModifier;
+    }
+
+    public double getTertiaryMaxModifier() {
+        return tertiaryMaxModifier;
+    }
+
+    // ==================== GETTERS: State ====================
 
     public boolean isRegenerating() {
         return regenerating;
     }
 
     /**
-     * Save to NBT.
+     * Check if a specific pool is full.
+     */
+    public boolean isPoolFull(@NotNull ManaPoolType type) {
+        return switch (type) {
+            case PRIMARY -> primaryMana >= getPrimaryMax();
+            case SECONDARY -> secondaryMana >= getSecondaryMax();
+            case TERTIARY -> tertiaryMana >= getTertiaryMax();
+        };
+    }
+
+    /**
+     * Check if all pools are full.
+     */
+    public boolean isAllPoolsFull() {
+        return primaryMana >= getPrimaryMax() && secondaryMana >= getSecondaryMax()
+                && tertiaryMana >= getTertiaryMax();
+    }
+
+    /**
+     * Check if all pools are empty.
+     */
+    public boolean isAllPoolsEmpty() {
+        return primaryMana <= 0 && secondaryMana <= 0 && tertiaryMana <= 0;
+    }
+
+    // ==================== SETTERS (For Commands) ====================
+
+    /**
+     * Directly set current mana (for commands/debugging).
+     */
+    public void setPrimaryMana(double value) {
+        this.primaryMana = Math.max(0, Math.min(value, getPrimaryMax()));
+    }
+
+    public void setSecondaryMana(double value) {
+        this.secondaryMana = Math.max(0, Math.min(value, getSecondaryMax()));
+    }
+
+    public void setTertiaryMana(double value) {
+        this.tertiaryMana = Math.max(0, Math.min(value, getTertiaryMax()));
+    }
+
+    // ==================== NBT SERIALIZATION ====================
+
+    /**
+     * Save to NBT. Saves current mana, pool values, and modifiers.
      *
      * @param nbt The NBT compound to write to
      * @return The modified NBT compound
      */
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    @NotNull
+    public NbtCompound writeNbt(@NotNull NbtCompound nbt) {
+        // Current mana
         nbt.putDouble("PrimaryMana", primaryMana);
         nbt.putDouble("SecondaryMana", secondaryMana);
         nbt.putDouble("TertiaryMana", tertiaryMana);
-        nbt.putDouble("PrimaryMax", primaryMax);
-        nbt.putDouble("SecondaryMax", secondaryMax);
-        nbt.putDouble("TertiaryMax", tertiaryMax);
+
+        // Pool values (permanent progression)
+        nbt.putDouble("PrimaryPoolValue", primaryPoolValue);
+        nbt.putDouble("SecondaryPoolValue", secondaryPoolValue);
+        nbt.putDouble("TertiaryPoolValue", tertiaryPoolValue);
+
+        // Modifiers (don't save - these are temporary and should be reapplied)
+        // nbt.putDouble("PrimaryMaxModifier", primaryMaxModifier);
+        // nbt.putDouble("SecondaryMaxModifier", secondaryMaxModifier);
+        // nbt.putDouble("TertiaryMaxModifier", tertiaryMaxModifier);
+
+        // State
         nbt.putBoolean("Regenerating", regenerating);
+
         return nbt;
     }
 
     /**
-     * Load from NBT - FIXED for Minecraft 1.21+ NBT API that returns Optional<T>.
-     *
-     * Uses the fallback overload methods: getDouble(key, fallback), getBoolean(key, fallback).
+     * Load from NBT. Reads current mana and pool values.
      *
      * @param nbt The NBT compound to read from
      */
-    public void readNbt(NbtCompound nbt) {
-        // Use the fallback overloads that accept default values
-        primaryMana = nbt.getDouble("PrimaryMana", primaryMax);
-        secondaryMana = nbt.getDouble("SecondaryMana", secondaryMax);
-        tertiaryMana = nbt.getDouble("TertiaryMana", tertiaryMax);
-        primaryMax = nbt.getDouble("PrimaryMax", MAX_MANA_PRIMARY_POOL);
-        secondaryMax = nbt.getDouble("SecondaryMax", MAX_MANA_SECONDARY_POOL);
-        tertiaryMax = nbt.getDouble("TertiaryMax", MAX_MANA_TERTIARY_POOL);
+    public void readNbt(@NotNull NbtCompound nbt) {
+        // Read pool values first
+        primaryPoolValue = nbt.getDouble("PrimaryPoolValue", DEFAULT_PRIMARY_POOL_VALUE);
+        secondaryPoolValue = nbt.getDouble("SecondaryPoolValue", DEFAULT_SECONDARY_POOL_VALUE);
+        tertiaryPoolValue = nbt.getDouble("TertiaryPoolValue", DEFAULT_TERTIARY_POOL_VALUE);
+
+        // Reset modifiers (temporary, will be reapplied by equipment/buffs)
+        primaryMaxModifier = 0;
+        secondaryMaxModifier = 0;
+        tertiaryMaxModifier = 0;
+
+        // Read current mana (default to max if not present)
+        primaryMana = nbt.getDouble("PrimaryMana", getPrimaryMax());
+        secondaryMana = nbt.getDouble("SecondaryMana", getSecondaryMax());
+        tertiaryMana = nbt.getDouble("TertiaryMana", getTertiaryMax());
+
+        // Clamp mana values to current max (in case pool values changed)
+        primaryMana = Math.min(primaryMana, getPrimaryMax());
+        secondaryMana = Math.min(secondaryMana, getSecondaryMax());
+        tertiaryMana = Math.min(tertiaryMana, getTertiaryMax());
+
+        // State
         regenerating = nbt.getBoolean("Regenerating", true);
     }
 
@@ -342,5 +544,10 @@ public class ManaPool {
      */
     public enum ManaPoolType {
         PRIMARY, SECONDARY, TERTIARY
+    }
+
+    public void increaseMaxMana(ManaPoolType type, double difference) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'increaseMaxMana'");
     }
 }

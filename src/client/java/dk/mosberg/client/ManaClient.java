@@ -25,6 +25,14 @@ public class ManaClient implements ClientModInitializer {
 		// Initialize client-side rendering systems
 		OverlayRenderer.initialize();
 
+		// Register mana HUD overlay
+		ManaHudOverlay.register();
+
+		// Register mana ModMenu screen
+		// ManaModMenu.register();
+		// Note: The above line is commented out to prevent potential issues with ModMenu
+		// integration.
+
 		// Initialize utility classes
 		ColorHelper.initialize();
 		DrawHelper.initialize();
@@ -33,9 +41,6 @@ public class ManaClient implements ClientModInitializer {
 		ScreenHelper.initialize();
 		StatusIconHelper.initialize();
 		TextHelper.initialize();
-
-		// Register HUD overlay
-		ManaHudOverlay.register();
 
 		LOGGER.info("Mana System client initialized!");
 	}

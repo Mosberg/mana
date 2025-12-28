@@ -15,7 +15,8 @@
   "environment": "*",
   "entrypoints": {
     "main": ["dk.mosberg.Mana"],
-    "client": ["dk.mosberg.client.ManaClient"]
+    "client": ["dk.mosberg.client.ManaClient"],
+    "modmenu": ["dk.mosberg.client.config.ManaModMenu"]
   },
   "mixins": [],
   "depends": {
