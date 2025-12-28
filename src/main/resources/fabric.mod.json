@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": ["${mod_author}"],
+  "contact": {
+    "homepage": "${mod_homepage}",
+    "sources": "${mod_sources}",
+    "issues": "${mod_issues}"
+  },
+  "license": "${mod_license}",
+  "icon": "assets/mana/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dk.mosberg.Mana"],
+    "client": ["dk.mosberg.client.ManaClient"]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=${java_version}"
+  },
+  "recommends": {
+    "modmenu": "*",
+    "cloth-config": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "update_checker": true
+    }
+  }
+}
