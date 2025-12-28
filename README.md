@@ -1,5 +1,7 @@
 # Mana System - Minecraft 1.21.10 Fabric Mod Configuration
 
+[Mana System Repository](https://github.com/Mosberg/mana)
+
 ```properties
 # ═══════════════════════════════════════════════════════════════════════════════
 # Gradle JVM Configuration - Optimized for Fabric Development
